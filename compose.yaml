@@ -1,10 +1,11 @@
 services:
   wordpress:
-    image: wordpress
+    build: .
     container_name: wordpress
     volumes:
       - ./php.ini:/usr/local/etc/php/conf.d/conf.ini
       - wordpress:/var/www/html
+      - ./msmtprc:/etc/msmtprc
     ports:
       - 8080:80
     env_file: .env

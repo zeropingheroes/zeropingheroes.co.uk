@@ -1,0 +1,16 @@
+defaults
+auth           on
+tls            on
+tls_trust_file /etc/ssl/certs/ca-certificates.crt
+logfile        /tmp/msmtp.log
+
+# Custom Mailserver
+account        providername
+host           smtp.example.com
+port           587
+from           wordpress@zeropingheroes.co.uk
+user           wordpress@zeropingheroes.co.uk
+password       super-secret
+
+# Set a default account
+account default : providername
