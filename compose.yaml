@@ -1,0 +1,23 @@
+services:
+  wordpress:
+    image: wordpress
+    container_name: wordpress
+    volumes:
+      - ./php.ini:/usr/local/etc/php/conf.d/conf.ini
+      - wordpress:/var/www/html
+    ports:
+      - 8080:80
+    env_file: .env
+    depends_on:
+      - mysql
+    restart: unless-stopped
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    volumes:
+      - mysql:/var/lib/mysql
+    env_file: .env
+    restart: unless-stopped
+volumes:
+  mysql:
+  wordpress:
