@@ -4,13 +4,18 @@ Website configuration for https://www.zeropingheroes.co.uk/
 
 ## Image
 
-`Dockerfile` builds the Apache + PHP runtime. WordPress itself is not in the image. It lives in the
-bind-mounted `www/` directory.
+`Dockerfile` extends the official `wordpress:php8.5-apache` image with msmtp, wp-cli and some
+hardening. The official image maintains the PHP extensions, opcache, error logging and remote IP
+handling.
 
-The image is built locally on the server; it isn't published to a registry. The server's stack
-references this repo clone as its build context and tags the result `zph-website:php8.5`. The
-official `php` base image is rebuilt for every PHP release, so **rebuild when PHP ships a security
-fix**:
+WordPress itself runs from the bind-mounted `www/` directory, not the copy bundled in the base
+image. The official entrypoint only installs its bundled copy when `www/` has neither `index.php`
+nor `wp-includes/version.php`. It only writes `wp-config.php` when that file is missing **and**
+`WORDPRESS_*` environment variables are set. **Don't add `WORDPRESS_*` variables to `.env`.**
+
+The image is built locally on the server; it isn't published to a registry. The server's stack uses
+this repo clone as its build context and tags the result `zph-website:php8.5`. The official image is
+rebuilt upstream for every PHP release, so **rebuild when PHP ships a security fix**:
 
 ```bash
 ./dc zeropingheroes build --pull && ./dc zeropingheroes up -d    # from the server's stack repo
@@ -34,8 +39,10 @@ docker compose exec zph_wordpress wp theme update --all
 docker compose exec zph_wordpress wp language core update
 ```
 
-## Security hardening baked into the image
+## Added on top of the official image
 
+- `msmtp`, used by `sendmail_path` in `php.ini`
+- wp-cli
 - `session.upload_progress.enabled = 0`: mitigates CVE-2026-115560 until a fixed PHP release ships
 - `expose_php = Off`, `ServerTokens Prod`, `ServerSignature Off`
-- `mod_remoteip`, so client IPs behind the reverse proxy are correct (logs, rate limiting, security plugins)
+- A healthcheck against a static file
