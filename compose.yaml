@@ -1,6 +1,9 @@
+# Standalone/local deployment. Production runs from the server's stack
+# repository, which builds the same Dockerfile locally as zph-website:php8.5.
 services:
   wordpress:
     build: .
+    image: zph-website:php8.5
     container_name: wordpress
     user: "${UID}:${GID}"
     volumes:
@@ -14,7 +17,9 @@ services:
       - mysql
     restart: unless-stopped
   mysql:
-    image: mysql:8.0
+    # LTS. An existing 8.0 data dir must go through 8.4 first (8.0 -> 8.4 -> 9.7),
+    # and 9.x no longer has mysql_native_password.
+    image: mysql:9.7
     container_name: mysql
     volumes:
       - mysql:/var/lib/mysql
